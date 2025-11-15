@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const activityInput = document.getElementById("activity");
   const closeRegistrationModal = document.querySelector(".close-modal");
 
+  // Theme toggle elements
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
+
   // Search and filter elements
   const searchInput = document.getElementById("activity-search");
   const searchButton = document.getElementById("search-button");
@@ -43,6 +47,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+
+  // Theme management
+  function initializeTheme() {
+    // Check if user has a saved theme preference
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      enableDarkMode();
+    } else {
+      enableLightMode();
+    }
+  }
+
+  function enableDarkMode() {
+    document.body.classList.add("dark-mode");
+    themeIcon.textContent = "☀️";
+    localStorage.setItem("theme", "dark");
+  }
+
+  function enableLightMode() {
+    document.body.classList.remove("dark-mode");
+    themeIcon.textContent = "🌙";
+    localStorage.setItem("theme", "light");
+  }
+
+  function toggleTheme() {
+    if (document.body.classList.contains("dark-mode")) {
+      enableLightMode();
+    } else {
+      enableDarkMode();
+    }
+  }
+
+  // Add event listener for theme toggle
+  themeToggle.addEventListener("click", toggleTheme);
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -862,6 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeTheme();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
