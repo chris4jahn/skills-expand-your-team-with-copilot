@@ -519,6 +519,35 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // Create social sharing buttons
+    const shareUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+    const shareTitle = encodeURIComponent(`Join ${name} at Mergington High School!`);
+    const shareText = encodeURIComponent(`Check out ${name}: ${details.description} - ${formattedSchedule}`);
+    
+    const socialShareHtml = `
+      <div class="social-share-container">
+        <div class="social-share-label">Share this activity:</div>
+        <div class="social-share-buttons">
+          <button class="share-btn share-facebook tooltip" data-activity="${name}" title="Share on Facebook">
+            <span class="share-icon">📘</span>
+            <span class="tooltip-text">Share on Facebook</span>
+          </button>
+          <button class="share-btn share-twitter tooltip" data-activity="${name}" title="Share on Twitter">
+            <span class="share-icon">🐦</span>
+            <span class="tooltip-text">Share on Twitter</span>
+          </button>
+          <button class="share-btn share-email tooltip" data-activity="${name}" title="Share via Email">
+            <span class="share-icon">✉️</span>
+            <span class="tooltip-text">Share via Email</span>
+          </button>
+          <button class="share-btn share-copy tooltip" data-activity="${name}" title="Copy Link">
+            <span class="share-icon">🔗</span>
+            <span class="tooltip-text">Copy link to clipboard</span>
+          </button>
+        </div>
+      </div>
+    `;
+
     activityCard.innerHTML = `
       ${tagHtml}
       <h4>${name}</h4>
@@ -528,6 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      ${socialShareHtml}
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -575,6 +605,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+
+    // Add click handlers for social sharing buttons
+    const shareButtons = activityCard.querySelectorAll(".share-btn");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", () => handleShare(button, name, details));
     });
 
     // Add click handler for register button (only when authenticated)
@@ -750,6 +786,51 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 300);
       }
     });
+  }
+
+  // Handle social sharing
+  function handleShare(button, activityName, activityDetails) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareTitle = `Join ${activityName} at Mergington High School!`;
+    const shareText = `Check out ${activityName}: ${activityDetails.description}`;
+    const formattedSchedule = formatSchedule(activityDetails);
+    const fullShareText = `${shareText} - Schedule: ${formattedSchedule}`;
+
+    if (button.classList.contains("share-facebook")) {
+      // Facebook sharing
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(baseUrl)}&quote=${encodeURIComponent(fullShareText)}`;
+      window.open(facebookUrl, "_blank", "width=600,height=400");
+    } else if (button.classList.contains("share-twitter")) {
+      // Twitter sharing
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(baseUrl)}`;
+      window.open(twitterUrl, "_blank", "width=600,height=400");
+    } else if (button.classList.contains("share-email")) {
+      // Email sharing
+      const emailSubject = encodeURIComponent(shareTitle);
+      const emailBody = encodeURIComponent(`${fullShareText}\n\nView all activities: ${baseUrl}`);
+      window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+    } else if (button.classList.contains("share-copy")) {
+      // Copy link to clipboard
+      const textToCopy = `${shareTitle}\n${fullShareText}\n\nView all activities: ${baseUrl}`;
+      
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        // Show success feedback
+        const icon = button.querySelector(".share-icon");
+        const originalIcon = icon.textContent;
+        icon.textContent = "✓";
+        button.style.backgroundColor = "#2e7d32";
+        
+        setTimeout(() => {
+          icon.textContent = originalIcon;
+          button.style.backgroundColor = "";
+        }, 2000);
+        
+        showMessage("Activity link copied to clipboard!", "success");
+      }).catch((err) => {
+        console.error("Failed to copy:", err);
+        showMessage("Failed to copy link. Please try again.", "error");
+      });
+    }
   }
 
   // Handle unregistration with confirmation
